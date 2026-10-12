@@ -1,4 +1,5 @@
-﻿import sys
+import json
+import sys
 import tempfile
 from pathlib import Path
 
@@ -7,7 +8,8 @@ import streamlit as st
 from sklearn.model_selection import train_test_split
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
-from tabular_model import train_tabular_model
+from tabular_model import train_tabular_model, save_model_bundle, load_model_bundle
+
 
 st.set_page_config(page_title="MediMind AI", page_icon="🩺")
 st.title("MediMind AI")
@@ -145,7 +147,14 @@ if st.button("Train and evaluate model", type="primary"):
                 feature_columns=feature_columns,
                 model_choice=model_choice,
             )
+            save_model_bundle(results)
+        st.success("Model saved to models/medimind_model.joblib")
 
+        st.session_state["trained_pipeline"] = results["pipeline"]
+        st.session_state["trained_features"] = results["feature_columns"]
+        st.session_state["trained_target"] = results["target_column"]
+        st.session_state["trained_task"] = results["task"]
+        st.session_state["trained_target_labels"] = results["target_labels"]
         st.subheader("Results")
         st.write(f"**Model:** {model_choice}")
         st.write(f"**Task:** {results['task']}")
@@ -215,6 +224,20 @@ if st.button("Train and evaluate model", type="primary"):
             "These scores use one train/test split. They are a starting estimate, "
             "not proof that a model will work well on new data."
         )
+        report = {
+            "task": results["task"],
+            "target_column": results["target_column"],
+            "rows_used": results["rows_used"],
+            "feature_columns": results["feature_columns"],
+            "metrics": results["metrics"],
+        }
+        report_text = json.dumps(report, indent=2, default=str)
+        st.download_button(
+            "Download results report (JSON)",
+            data=report_text,
+            file_name="medimind_results_report.json",
+            mime="application/json",
+        )
     except Exception as error:
         st.error(f"Model training failed. Details: {error}")
     finally:
@@ -225,4 +248,80 @@ if st.button("Train and evaluate model", type="primary"):
 
 
 
+if st.button("Load saved model"):
+    try:
+        bundle = load_model_bundle()
+        if bundle is None:
+            st.warning("No saved model found yet. Train a model first.")
+        else:
+            st.session_state["trained_pipeline"] = bundle["pipeline"]
+            st.session_state["trained_features"] = bundle["feature_columns"]
+            st.session_state["trained_target"] = bundle["target_column"]
+            st.session_state["trained_task"] = bundle["task"]
+            st.session_state["trained_target_labels"] = bundle["target_labels"]
+            st.success("Saved model loaded. You can now upload a new CSV for predictions.")
+    except Exception as error:
+        st.error(f"Could not load the saved model: {error}")
 
+
+if "trained_pipeline" in st.session_state:
+    st.divider()
+    st.subheader("Predict on a new CSV")
+    st.write("Upload a CSV containing the same input columns used to train this model.")
+    new_file = st.file_uploader(
+        "Upload new, unlabeled rows",
+        type=["csv"],
+        key="new_prediction_file",
+    )
+
+    if new_file is not None:
+        try:
+            new_data = pd.read_csv(new_file)
+            required_columns = st.session_state["trained_features"]
+            missing_columns = [
+                column for column in required_columns if column not in new_data.columns
+            ]
+
+            if missing_columns:
+                st.error(f"This file is missing required input columns: {missing_columns}")
+            elif new_data.empty:
+                st.error("The uploaded CSV has no rows.")
+            else:
+                st.dataframe(new_data.head(10), width="stretch")
+
+                if st.button("Predict these rows", key="predict_new_rows"):
+                    pipeline = st.session_state["trained_pipeline"]
+                    task = st.session_state["trained_task"]
+                    predicted_values = pipeline.predict(new_data[required_columns])
+
+                    if task == "classification":
+                        labels = st.session_state["trained_target_labels"]
+                        predicted_values = [
+                            labels[int(value)] for value in predicted_values
+                        ]
+
+                    output_data = new_data.copy()
+                    output_data[
+                        "predicted_" + st.session_state["trained_target"]
+                    ] = predicted_values
+
+                    st.subheader("Predictions")
+                    st.dataframe(output_data, width="stretch")
+                    st.download_button(
+                        "Download new predictions",
+                        data=output_data.to_csv(index=False).encode("utf-8"),
+                        file_name="medimind_new_predictions.csv",
+                        mime="text/csv",
+                        key="download_new_predictions",
+                    )
+        except Exception as error:
+            st.error(f"Could not read or predict this CSV. Details: {error}")
+            
+
+
+
+    
+
+        
+
+            
