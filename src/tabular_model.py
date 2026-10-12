@@ -1,6 +1,8 @@
-﻿from pathlib import Path
+from pathlib import Path
 
 import pandas as pd
+import numpy as np
+import joblib
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.impute import SimpleImputer
@@ -17,6 +19,24 @@ from sklearn.model_selection import train_test_split, cross_validate, Stratified
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+def save_model_bundle(results: dict, path: str = "models/medimind_model.joblib") -> None:
+    model_bundle = {
+        "pipeline": results["pipeline"],
+        "task": results["task"],
+        "target_column": results["target_column"],
+        "feature_columns": results["feature_columns"],
+        "target_labels": results["target_labels"],
+    }
+
+    model_path = Path(path)
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model_bundle, model_path)
+
+def load_model_bundle(path: str = "models/medimind_model.joblib") -> dict | None:
+    model_path = Path(path)
+    if not model_path.exists():
+        return None
+    return joblib.load(model_path)    
 
 def train_tabular_model(
     csv_path: str,
@@ -168,22 +188,52 @@ def train_tabular_model(
         cv_mae = -cv_scores["test_mae"]
         metrics["cv_mae_mean"] = round(cv_mae.mean(), 3)
         metrics["cv_mae_std"] = round(cv_mae.std(), 3)
+    feature_importance = []
+    try:
+        estimator = pipeline.named_steps["model"]
+        feature_names = pipeline.named_steps["preprocessing"].get_feature_names_out()
+
+        if hasattr(estimator, "feature_importances_"):
+            importance_values = estimator.feature_importances_
+        elif hasattr(estimator, "coef_"):
+            importance_values = (
+                pd.DataFrame(estimator.coef_).abs().mean(axis=0).to_numpy()
+            )
+        else:
+            importance_values = []
+
+        if len(feature_names) == len(importance_values):
+            feature_importance = [
+                {"feature": str(name), "importance": round(float(value), 6)}
+                for name, value in zip(feature_names, importance_values)
+            ]
+            feature_importance.sort(
+                key=lambda item: item["importance"], reverse=True
+            )
+            feature_importance = feature_importance[:15]
+    except (AttributeError, ValueError):
+        feature_importance = []
     return {
-        "task": task,
-        "target_column": target_column,
-        "rows_used": len(X),
-        "feature_columns": feature_columns,
-        "actual": (
-            target_labels[y_test].tolist()
-            if task == "classification"
-            else y_test.tolist()
-        ),
-        "predictions": (
-            target_labels[predictions].tolist()
-            if task == "classification"
-            else predictions.tolist()
-        ),        "metrics": metrics,
-    }
+    "task": task,
+    "target_column": target_column,
+    "rows_used": len(X),
+    "feature_columns": feature_columns,
+    "actual": (
+        target_labels[y_test].tolist()
+        if task == "classification"
+        else y_test.tolist()
+    ),
+    "predictions": (
+        target_labels[predictions].tolist()
+        if task == "classification"
+        else predictions.tolist()
+    ),
+    "pipeline": pipeline,
+    "target_labels": target_labels.tolist() if task == "classif        "feature_importance": feature_importance,
+ication" else None,
+    "metrics": metrics,
+}
+
 
 
 

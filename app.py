@@ -11,7 +11,74 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from tabular_model import train_tabular_model, save_model_bundle, load_model_bundle
 
 
-st.set_page_config(page_title="MediMind AI", page_icon="🩺")
+st.set_page_config(page_title="MediMind AI", page_icon="ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº")
+# MediMind AI visual theme
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background:
+            radial-gradient(ellipse at 10% 0%, rgba(35, 110, 120, 0.20), transparent 34%),
+            linear-gradient(145deg, #0b1220 0%, #101827 55%, #111b2c 100%);
+    }
+
+    [data-testid="stAppViewContainer"] .main .block-container {
+        max-width: 1180px;
+        padding-top: 2rem;
+        padding-bottom: 4rem;
+    }
+
+    h1 {
+        letter-spacing: -0.04em;
+        font-weight: 750 !important;
+    }
+
+    h2, h3 {
+        letter-spacing: -0.025em;
+    }
+
+    [data-testid="stMetric"] {
+        background: rgba(25, 38, 55, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        padding: 1rem 1.1rem;
+        border-radius: 14px;
+    }
+
+    [data-testid="stFileUploader"] {
+        background: rgba(25, 38, 55, 0.55);
+        border: 1px dashed rgba(94, 234, 212, 0.45);
+        border-radius: 14px;
+        padding: 0.6rem;
+    }
+
+    div.stButton > button[kind="primary"] {
+        border: 0;
+        border-radius: 10px;
+        font-weight: 650;
+        padding: 0.65rem 1rem;
+        background: linear-gradient(90deg, #0f9f9a, #2563eb);
+        color: white;
+    }
+
+    div.stButton > button[kind="primary"]:hover {
+        border: 0;
+        filter: brightness(1.12);
+        color: white;
+    }
+
+    [data-testid="stDataFrame"] {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    [data-testid="stAlert"] {
+        border-radius: 12px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 st.title("MediMind AI")
 st.write("Upload a tabular CSV, choose what to predict, and train a baseline model.")
 st.caption("Educational project only. Not for diagnosis or clinical decisions.")
@@ -37,7 +104,7 @@ if len(data.columns) < 2:
     st.stop()
 
 st.subheader("Dataset preview")
-st.write(f"{len(data)} rows · {len(data.columns)} columns")
+st.write(f"{len(data)} rows ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· {len(data.columns)} columns")
 st.dataframe(data.head(10), width="stretch")
 
 profile = pd.DataFrame({
@@ -49,6 +116,29 @@ profile = pd.DataFrame({
         for column in data.columns
     ],
 })
+st.subheader("Dataset health")
+
+duplicate_count = int(data.duplicated().sum())
+missing_cells = int(data.isna().sum().sum())
+missing_percent = round(
+    missing_cells / (len(data) * len(data.columns)) * 100, 1
+)
+
+id_like_columns = [
+    column for column in data.columns
+    if any(word in str(column).lower() for word in ["id", "name", "record", "patient"])
+]
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Rows", f"{len(data):,}")
+col2.metric("Missing cells", f"{missing_cells:,}", f"{missing_percent}% of cells")
+col3.metric("Duplicate rows", f"{duplicate_count:,}")
+
+if id_like_columns:
+    st.warning(
+        "These columns may identify people or records. Review them before training: "
+        + ", ".join(map(str, id_like_columns))
+    )
 st.subheader("Dataset profile")
 st.dataframe(profile, width="stretch")
 st.subheader("Choose the prediction")
@@ -60,10 +150,13 @@ target_column = st.selectbox(
 available_features = [
     column for column in data.columns if column != target_column
 ]
+suggested_features = [
+    column for column in available_features if column not in id_like_columns
+]
 feature_columns = st.multiselect(
     "Which columns should the model use as inputs?",
     options=available_features,
-    default=available_features,
+    default=suggested_features,
 )
 
 task = st.radio(
@@ -194,14 +287,14 @@ if st.button("Train and evaluate model", type="primary"):
         if task == "classification":
             st.subheader("3-fold cross-validation")
             st.write(
-                f"Accuracy: {metrics['cv_accuracy_mean']} ± {metrics['cv_accuracy_std']}"
+                f"Accuracy: {metrics['cv_accuracy_mean']} ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â± {metrics['cv_accuracy_std']}"
             )
             st.write(
-                f"Weighted F1: {metrics['cv_f1_mean']} ± {metrics['cv_f1_std']}"
+                f"Weighted F1: {metrics['cv_f1_mean']} ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â± {metrics['cv_f1_std']}"
             )
         else:
             st.subheader("3-fold cross-validation")
-            st.write(f"MAE: {metrics['cv_mae_mean']} ± {metrics['cv_mae_std']}")
+            st.write(f"MAE: {metrics['cv_mae_mean']} ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â± {metrics['cv_mae_std']}")
 
         if task == "classification":
             st.metric("Accuracy", metrics["accuracy"])
@@ -217,13 +310,23 @@ if st.button("Train and evaluate model", type="primary"):
             st.write("MAE is the average prediction error in the target's units.")
             st.metric("Root mean squared error (RMSE)", metrics["rmse"])
             st.write("RMSE is in the target's units and penalizes larger errors more.")
-            st.metric("R² score", metrics["r2"])
-            st.write("R² compares the model with predicting the average target value.")
+            st.metric("RÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â² score", metrics["r2"])
+            st.write("RÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â² compares the model with predicting the average target value.")
 
         st.info(
             "These scores use one train/test split. They are a starting estimate, "
             "not proof that a model will work well on new data."
         )
+        if results.get("feature_importance"):
+            st.subheader("Most influential features")
+            st.caption(
+                "These show which inputs influenced this model most. "
+                "They do not prove cause or medical importance."
+            )
+            st.dataframe(
+                pd.DataFrame(results["feature_importance"]),
+                width="stretch",
+            )
         report = {
             "task": results["task"],
             "target_column": results["target_column"],
@@ -305,6 +408,15 @@ if "trained_pipeline" in st.session_state:
                         "predicted_" + st.session_state["trained_target"]
                     ] = predicted_values
 
+                    if task == "classification" and hasattr(pipeline, "predict_proba"):
+                        confidence = pipeline.predict_proba(
+                            new_data[required_columns]
+                        ).max(axis=1)
+                        output_data["model_confidence"] = confidence.round(3)
+                        st.caption(
+                            "Model confidence is the highest predicted class probability. "
+                            "It is not a guarantee of correctness."
+                        )
                     st.subheader("Predictions")
                     st.dataframe(output_data, width="stretch")
                     st.download_button(
