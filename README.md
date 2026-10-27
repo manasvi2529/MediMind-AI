@@ -1,12 +1,12 @@
-🩺 MediMind AI
+# 🩺 MediMind AI
 
 Multilingual AI Health Voice Assistant
 
-🚀 Live Demo: "Open MediMind AI" (https://medimind-ai-nk6qxuejc5x8udbmqrtn53.streamlit.app/)
+## 🚀 Live Demo: "Open MediMind AI" (https://medimind-ai-nk6qxuejc5x8udbmqrtn53.streamlit.app/)
 
 MediMind AI is a multilingual health assistance web application built with Python and Streamlit. It helps users access basic health information through a simple, user-friendly interface designed for patients and families.
 
-✨ Features
+## ✨ Features
 
 - 🗣️ Voice Assistant — Speak or type your health concerns.
 - 🌐 Multilingual Support — Designed to support 10 Indian languages.
@@ -16,7 +16,7 @@ MediMind AI is a multilingual health assistance web application built with Pytho
 - ❤️ Vitals & First Aid — Access basic health and first-aid information.
 - 🎨 Interactive Interface — A Streamlit-powered web application.
 
-🛠️ Technology Stack
+## 🛠️ Technology Stack
 
 - Python
 - Streamlit
@@ -25,7 +25,7 @@ MediMind AI is a multilingual health assistance web application built with Pytho
 - Text-to-Speech
 - OpenRouter API (optional, depending on configured features)
 
-🚀 Run Locally
+## 🚀 Run Locally
 
 1. Clone the repository
 
@@ -64,17 +64,17 @@ streamlit run app.py
 
 The application will open in your browser.
 
-☁️ Deployment
+## ☁️ Deployment
 
 MediMind AI is deployed using Streamlit Community Cloud.
 
 Visit the live application:
 
-👉 "https://medimind-ai-nk6qxuejc5x8udbmqrtn53.streamlit.app/" (https://medimind-ai-nk6qxuejc5x8udbmqrtn53.streamlit.app/)
+## 👉 "https://medimind-ai-nk6qxuejc5x8udbmqrtn53.streamlit.app/" (https://medimind-ai-nk6qxuejc5x8udbmqrtn53.streamlit.app/)
 
 To deploy your own version, connect the GitHub repository to Streamlit Community Cloud and configure any required secrets in the app settings.
 
-🔒 Privacy & Safety
+## 🔒 Privacy & Safety
 
 - Do not enter private patient information or sensitive medical records.
 - Keep API keys and credentials out of source control.
@@ -82,7 +82,7 @@ To deploy your own version, connect the GitHub repository to Streamlit Community
 - It is not a substitute for a qualified healthcare professional, medical diagnosis, or emergency services.
 - Seek professional medical help for urgent or serious symptoms.
 
-📌 Project Information
+## 📌 Project Information
 
 Project: MediMind AI
 Repository: "manasvi2529/MediMind-AI" (https://github.com/manasvi2529/MediMind-AI)
@@ -90,6 +90,6 @@ Live Application: "Launch MediMind AI" (https://medimind-ai-nk6qxuejc5x8udbmqrtn
 
 ---
 
-⭐ If you find this project useful, consider starring the repository on GitHub.
+### ⭐ If you find this project useful, consider starring the repository on GitHub.
 
 Built with Python and Streamlit to make basic health information more accessible.
