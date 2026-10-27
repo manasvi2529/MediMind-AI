@@ -4,6 +4,8 @@ Voice-first health assistant in pure Python (Streamlit). People who cannot read 
 in 10 Indian languages and **hear** the answer. Also: symptom checker, vitals/BMI checker, first-aid guides,
 interactive map for nearest hospitals and blood banks with live bed and blood vacancies, and automatic emergency detection (112 / 108).
 
+## Live Demo: https://medimind-ai-nk6qxuejc5x8udbmqrtn53.streamlit.app/
+
 ## Run locally
 ```
 python -m venv .venv
