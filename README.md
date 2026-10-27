@@ -5,6 +5,7 @@ in 10 Indian languages and **hear** the answer. Also: symptom checker, vitals/BM
 interactive map for nearest hospitals and blood banks with live bed and blood vacancies, and automatic emergency detection (112 / 108).
 
 ## Live Demo: https://medimind-ai-nk6qxuejc5x8udbmqrtn53.streamlit.app/
+A multilingual health voice assistant with emergency resources, medicine information, symptom checking, and first-aid guidance.
 
 ## Run locally
 ```
