@@ -1,0 +1,6 @@
+streamlit>=1.40
+SpeechRecognition>=3.10
+gTTS>=2.5
+openai>=1.0.0
+requests>=2.28
+python-dotenv>=1.0.0
